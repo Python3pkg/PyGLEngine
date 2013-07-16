@@ -1,4 +1,4 @@
-from GameEngine.core import BaseManager
+from PyGLEngine.core import BaseManager
 
 #------------------------------------------------------------
 #------------------------------------------------------------

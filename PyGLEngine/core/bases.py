@@ -1,4 +1,4 @@
-from GameEngine.api import synthesize, getSortedByAttr, getClassName
+from PyGLEngine.api import synthesize, getSortedByAttr, getClassName
 
 #------------------------------------------------------------
 #------------------------------------------------------------

@@ -1,5 +1,5 @@
-from GameEngine.core import Base, BaseManager
-from GameEngine.api import synthesize, BitTracker
+from PyGLEngine.core import Base, BaseManager
+from PyGLEngine.api import synthesize, BitTracker
 
 #------------------------------------------------------------
 #------------------------------------------------------------
@@ -36,7 +36,7 @@ class ComponentManager(BaseManager):
     
     def deactivateComponet(self, id_tuple):
         try:
-            ent = self.database[id_tuple[0]].pop(id_tuple[1])]
+            ent = self.database[id_tuple[0]].pop(id_tuple[1])
         except KeyError:
             return
     

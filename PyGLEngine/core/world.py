@@ -1,7 +1,5 @@
-from operator import attrgetter
-
-from GameEngine.api import synthesize, getClassName, getSortedByAttr
-from GameEngine.core import SystemManager, EntityManager, TagManager, GroupManager
+from PyGLEngine.api import synthesize, getClassName, getSortedByAttr
+from PyGLEngine.core import SystemManager, EntityManager, TagManager, GroupManager
 
 #------------------------------------------------------------
 #------------------------------------------------------------

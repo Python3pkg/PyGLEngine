@@ -1,5 +1,5 @@
-from GameEngine.api import synthesize
-from GameEngine.core import ComponentTypeManager
+from PyGLEngine.api import synthesize
+from PyGLEngine.core import ComponentTypeManager
 
 #------------------------------------------------------------
 #------------------------------------------------------------

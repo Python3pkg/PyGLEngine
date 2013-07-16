@@ -1,7 +1,7 @@
 from pyglet import clock, app, window
 
-from GameEngine.api import synthesize
-from GameEngine.core import World
+from PyGLEngine.api import synthesize
+from PyGLEngine.core import World
 
 class GameClient(window.Window):
     

@@ -1,5 +1,5 @@
-from GameEngine.api import getSortedByAttr, BitTracker
-from GameEngine.core import BaseManager
+from PyGLEngine.api import getSortedByAttr, BitTracker
+from PyGLEngine.core import BaseManager
 
 #------------------------------------------------------------
 #------------------------------------------------------------

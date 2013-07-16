@@ -1,5 +1,5 @@
-from GameEngine.api import synthesize, getClassName, BitTracker
-from GameEngine.core import BaseManager
+from PyGLEngine.api import synthesize, getClassName, BitTracker
+from PyGLEngine.core import BaseManager
 
 #------------------------------------------------------------
 #------------------------------------------------------------
