@@ -1,13 +1,13 @@
 from setuptools import setup, find_packages
 
-import GameEngine
+import PyGLEngine
 
 setup( 
     name='PyGLEngine',
-    version=GameEngine.__version__,
+    version=PyGLEngine.__version__,
     author='Kyle Rockman',
     author_email='kyle.rockman@mac.com',
-	install_requires=['numpy==1.7.1','pyglet==1.1.4','pymunk==3.0.0'],
+	install_requires=open('requirements.txt').read().splitlines(),
     packages = find_packages(),
     package_data = {
         # If any subfolder contains these extensions, include them:

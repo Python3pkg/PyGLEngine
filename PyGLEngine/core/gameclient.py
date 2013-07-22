@@ -1,26 +1,29 @@
+from time import time, sleep
 from pyglet import clock, app, window
 
 from PyGLEngine.api import synthesize
-from PyGLEngine.core import World
+from PyGLEngine.core import World       
 
-class GameClient(window.Window):
+class _GameClient(window.Window):
     
     def __init__(self):
-        super(GameClient, self).__init__(fullscreen=True)
+        super(_GameClient, self).__init__(fullscreen=True)
         synthesize(self, 'gameFolder', None)
         synthesize(self, 'gameWorld', None)
         synthesize(self, 'showStats', False)
+        synthesize(self, 'isAlive', True)
         
-        synthesize(self, 'fps', clock.ClockDisplay())
+        synthesize(self, 'fps', clock.ClockDisplay(), True)
         
     def setGameWorld(self, value):
         self._gameWorld = value
-        clock.schedule(self._gameWorld.update)
+        clock.schedule_interval(self._gameWorld.update, 0.1)
 
     def on_close(self):
+        self.isAlive = 0
         self.dispatch_event('shutdown')
         self.dispatch_pending_events()
-        super(GameClient, self).on_close()
+        super(_GameClient, self).on_close()
         
     def on_draw(self):
         self.clear()
@@ -29,8 +32,14 @@ class GameClient(window.Window):
         
     def run(self):
         self.dispatch_event('init')
-        self._gameWorld.init()
+        self.dispatch_pending_events()
+        self.gameWorld.init()
         app.run()
+        
 
-GameClient.register_event_type('init')
-GameClient.register_event_type('shutdown')
+_GameClient.register_event_type('init')
+_GameClient.register_event_type('shutdown')
+
+GameClient = _GameClient()
+
+

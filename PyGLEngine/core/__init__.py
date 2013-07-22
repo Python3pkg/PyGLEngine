@@ -1,5 +1,4 @@
-from bases import Base, BaseSystem, BaseManager
-from entity import Entity
+from bases import Base, BaseManager
 from systems import *
 from managers import *
 from world import World

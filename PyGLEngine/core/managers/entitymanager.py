@@ -1,5 +1,93 @@
 from PyGLEngine.api import synthesize, getClassName, BitTracker
-from PyGLEngine.core import BaseManager
+from PyGLEngine.core import Base, BaseManager
+
+#------------------------------------------------------------
+#------------------------------------------------------------
+class Component(Base):
+    def __init__(self, **kwds):
+        super(Component, self).__init__(**kwds)
+        self.init()
+
+
+#------------------------------------------------------------
+#------------------------------------------------------------
+class ComponentBitTracker(BitTracker):
+    pass
+
+#------------------------------------------------------------
+#------------------------------------------------------------
+class Entity(Base):
+    def __init__(self):
+        super(Entity, self).__init__()
+        self.init()
+        
+    def addComponent(self, comp_cls):
+        self.database[getClassName(comp_cls)] = comp_cls
+
+#------------------------------------------------------------
+#------------------------------------------------------------
+class EntityProxy(Base):
+    def __init__(self, world=None):
+        super(EntityProxy, self).__init__(world=world)
+        synthesize(self, 'id', 0)
+        synthesize(self, 'oldCls', None)
+        synthesize(self, 'compBits', 0)
+        
+        #we cache these off to make accessing these speedier
+        #synthesize(self, 'ComponentManager', world.ComponentManager)
+        synthesize(self, 'GroupManager', world.GroupManager)
+        synthesize(self, 'TagManager', world.TagManager)
+        
+    def reset(self):
+        #self.ComponentManager.removeAllComponents(self.id)
+        self.database = {}
+        self.compBits = 0
+    
+    def __str__(self):
+        return "{0}".format(self.__repr__())
+    
+    def __repr__(self):
+        return "<EntityProxy '{0}' | id {1}>".format(self.oldCls, self.id)
+    
+    def __getattr__(self, name):
+        try:
+            return self.database[name]
+        except:
+            raise AttributeError
+    
+    def addComponent(self, comp_cls):
+        #comp_id = self.ComponentManager.addComponent(self.id, comp_cls)
+        if not issubclass(comp_cls, Component): raise TypeError
+        comp_id = ComponentBitTracker.getBit(comp_cls)
+        self.database[getClassName(comp_cls).lower()] = comp_cls(world=self.world)        
+        self.compBits |= comp_id
+    
+    def removeComponent(self, comp_id):
+        if bin(comp_id).count("1") != 1 : raise ValueError('{} is not a single bit'.format(comp_id))
+        #self.ComponentManager.removeComponent(self.id, comp_id)
+        self.database.pop(comp_id)
+        self.compBits &= ~comp_id
+
+    def getComponent(self, comp_id):
+        #return self.ComponentManager.getComponent(self.id, comp_id)
+        return self.database[comp_id]
+    
+    def getComponents(self):
+        #return self.ComponentManager.getComponents(self.id)
+        return self.database.viewvalues()
+
+    def setGroup(self, group_name):
+        self.GroupManager.addEntityToGroup(group, self.id)
+        
+    def setTag(self, tag):
+        self.TagManager.addTag(tag, self.id)
+        
+    def getTag(self):
+        return self.TagManager.getTagsByValue(self.id)
+    
+    def init(self):
+        self.world.SystemManager.addEntity(self)
+
 
 #------------------------------------------------------------
 #------------------------------------------------------------
@@ -8,14 +96,14 @@ class EntityBitTracker(BitTracker):
 
 #------------------------------------------------------------
 #------------------------------------------------------------
-class EntityManager(object):
+class EntityManager(BaseManager):
     REMOVED_COMPONENT_EVENT = "RemovedComponent"
     REMOVED_ENTITY_EVENT    = "RemovedEntity"
     ADDED_COMPONENT_EVENT   = "AddedComponent"
     ADDED_ENTITY_EVENT      = "AddedEntity"
 
-    def __init__(self, *args):
-        super(EntityManager, self).__init__(*args)
+    def __init__(self, **kwds):
+        super(EntityManager, self).__init__(**kwds)
         
         #List of the avaible entities, so we can reuse them
         synthesize(self, 'entityCache', list())
@@ -26,49 +114,33 @@ class EntityManager(object):
         synthesize(self, 'entityMask', 0)
         #We don't deactive an entity untill the next update frame
         synthesize(self, 'deactivateQueue', set())
-
-        
-        #I'm not entirely sure why this stuff is here?
-        #My guess is to eventually support event/signal based changed,
-        #something that should be pushed into the base class and have some methods for setting it up, and kicking off events etc
-        #or even a custom signal class
-        self.events = { EntityManager.REMOVED_COMPONENT_EVENT : [],
-                        EntityManager.REMOVED_ENTITY_EVENT : [],
-                        EntityManager.ADDED_COMPONENT_EVENT : [],
-                        EntityManager.ADDED_ENTITY_EVENT : [] }
-        self.RemovedComponentEvent = self.events[EntityManager.REMOVED_COMPONENT_EVENT]
-        self.RemovedEntityEvent = self.events[EntityManager.REMOVED_ENTITY_EVENT]
-        self.AddedComponentEvent = self.events[EntityManager.ADDED_COMPONENT_EVENT]
-        self.AddedEntityEvent = self.events[EntityManager.ADDED_ENTITY_EVENT]
-        
+                
     def scheduleDeactivate(self, ent_id):
         self.deactivateQueue.add(ent_id)
     
     def update(self, dt):
-        for ent_id in self.deactivateQueue :
-            self.deactivateEntity(ent_id)
+        [self.deactivateEntity(ent_id) for ent_id in self.deactivateQueue]
         self.deactivateQueue = set()
-
-    def addEvent(self, event, *data):
-        event = self.events[event]
-        event(*data)
             
     def getEntity(self, ent_id):
         return self.database[ent_id]
 
-    def createEntity(self):
+    def addEntity(self, ent_proxy):
+        if not issubclass(ent_proxy, Entity): raise TypeError
+        ent_proxy = ent_proxy()
         try:
             ent = self.entityCache.pop()
         except IndexError:
-            ent = Entity(world=self.world)
-            ent_name = getClassName(Entity) + str(self.nextId)
+            ent = EntityProxy(world=self.world)
+            ent_name = getClassName(EntityProxy) + str(self.nextId)
             ent.id = EntityBitTracker.getBit(ent_name)
             self.nextId += 1
         
+        ent.oldCls = getClassName(ent_proxy)
+        [ent.addComponent(comp_cls) for comp_cls in ent_proxy.database.viewvalues()]
         self.entityMask += ent.id
         self.database[ent.id] = ent
-        self.addEvent(EntityManager.ADDED_ENTITY_EVENT, ent)
-        return ent
+        return ent.id
     
     def deactivateEntity(self, ent_id):
         try:
@@ -79,10 +151,18 @@ class EntityManager(object):
         self.entityMask -= ent.id
         ent.reset()
         self.entityCache.append(ent)
-        self.addEvent(EntityManager.REMOVED_ENTITY_EVENT, ent_id)
 
     def removeEntity(self, ent_id):
         self.deactivateQueue.update(ent_id)
         
     def removeAllEntities(self):
         self.deactivateQueue.update(self.database.keys())
+        
+    def getActiveEntities(self):
+        return self.database.viewvalues()
+    
+    def getComponentBit(self, comp_cls):
+        return ComponentBitTracker.getBit(comp_cls)
+    
+    def init(self):
+        [ent.init() for ent in self.database.viewvalues()]

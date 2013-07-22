@@ -1,5 +1,5 @@
 from tagmanager import TagManager
 from groupmanager import GroupManager
-from systemmanager import SystemManager
-from componentmanager import ComponentManager
-from entitymanager import EntityManager
+from systemmanager import System, ThreadedSystem, SystemBitTracker, SystemManager
+#from componentmanager import Component, ComponentBitTracker, ComponentManager
+from entitymanager import Component, ComponentBitTracker, Entity, EntityProxy, EntityBitTracker, EntityManager

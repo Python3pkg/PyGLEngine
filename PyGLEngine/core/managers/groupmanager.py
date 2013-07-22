@@ -3,8 +3,8 @@ from PyGLEngine.core import BaseManager
 #------------------------------------------------------------
 #------------------------------------------------------------
 class GroupManager(BaseManager):
-    def __init__(self, *args):
-        super(GroupManager, self).__init__(*args)
+    def __init__(self, **kwds):
+        super(GroupManager, self).__init__(**kwds)
         
     def formatGroupName(self, group_name):
         return group_name.lower()
@@ -27,13 +27,13 @@ class GroupManager(BaseManager):
         
     def getGroups(self, ent_id):
         found_groups = []
-        for group_name, entity_mask in self.database.items() :
+        for group_name, entity_mask in self.database.viewitems() :
             bit_index = ent_id.bit_length() - 1
             if (entity_mask & (1<<bit_index)):
                 found_groups.append(group_name)
         return found_groups
     
-    def getEntityMask(self, group_name):
+    def getEntities(self, group_name):
         return self.database.get(group_name.lower(),0)        
     
     def isGrouped(self, ent_id):

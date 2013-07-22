@@ -1,10 +1,12 @@
-from PyGLEngine.core import Base, BaseManager
 from PyGLEngine.api import synthesize, BitTracker
+from PyGLEngine.core import Base, BaseManager
 
 #------------------------------------------------------------
 #------------------------------------------------------------
 class Component(Base):
-    pass
+    def __init__(self, **kwds):
+        super(Component, self).__init__(**kwds)
+        self.init()
 
 
 #------------------------------------------------------------
@@ -17,8 +19,8 @@ class ComponentBitTracker(BitTracker):
 #------------------------------------------------------------
 class ComponentManager(BaseManager):
     '''This class manages all the components registered'''
-    def __init__(self, *args):
-        super(ComponentManager, self).__init__(*args)
+    def __init__(self, **kwds):
+        super(ComponentManager, self).__init__(**kwds)
         synthesize(self, 'deactivateQueue', set())
         
     def scheduleDeactivate(self, ent_id):
@@ -29,9 +31,16 @@ class ComponentManager(BaseManager):
             self.deactivateComponent(id_tuple)
         self.deactivateQueue = set()
         
-    def addComponent(self, ent_id, comp_inst):
-        comp_id = ComponentBitTracker.getBit(comp_inst)
-        self.database[ent_id][comp_id] = comp_inst
+    def addComponent(self, ent_id, comp_cls):
+        if not issubclass(comp_cls, Component): raise TypeError
+        comp_id = ComponentBitTracker.getBit(comp_cls)
+        try :
+            ent_comps = self.database[ent_id]
+        except KeyError:
+            ent_comps = dict()
+            self.database[ent_id] = ent_comps
+        
+        ent_comps[comp_id] = comp_cls(world=self.world)
         return comp_id
     
     def deactivateComponet(self, id_tuple):
@@ -43,9 +52,16 @@ class ComponentManager(BaseManager):
     def removeComponent(self, ent_id, comp_id):
         self.deactivateQueue.add((ent_id, comp_id))
         
-    def removeAllcomponents(self, ent_id):
-        components = self.database[ent_id]
-        allComponents = zip(self.database.pop(ent_id), components)
-        self.deactivateQueue.add(allComponents)
+    def removeAllComponents(self, ent_id):
+        self.deactivateQueue.update(self.database.pop(ent_id).items())
+        
+    def getComponentBit(self, comp_cls):
+        return ComponentBitTracker.getBit(comp_cls)
+        
+    def getComponent(self, ent_id, comp_id):
+        return self.database.get(ent_id,{}).get(comp_id)
+    
+    def getComponents(self, ent_id):
+        return self.database.get(ent_id,[])
         
 
