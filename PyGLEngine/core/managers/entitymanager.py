@@ -74,7 +74,7 @@ class EntityProxy(Base):
     
     def getComponents(self):
         #return self.ComponentManager.getComponents(self.id)
-        return self.database.viewvalues()
+        return self.database.values()
 
     def setGroup(self, group_name):
         self.GroupManager.addEntityToGroup(group, self.id)
@@ -137,7 +137,7 @@ class EntityManager(BaseManager):
             self.nextId += 1
         
         ent.oldCls = getClassName(ent_proxy)
-        [ent.addComponent(comp_cls) for comp_cls in ent_proxy.database.viewvalues()]
+        [ent.addComponent(comp_cls) for comp_cls in ent_proxy.database.values()]
         self.entityMask += ent.id
         self.database[ent.id] = ent
         return ent.id
@@ -156,13 +156,13 @@ class EntityManager(BaseManager):
         self.deactivateQueue.update(ent_id)
         
     def removeAllEntities(self):
-        self.deactivateQueue.update(self.database.keys())
+        self.deactivateQueue.update(list(self.database.keys()))
         
     def getActiveEntities(self):
-        return self.database.viewvalues()
+        return self.database.values()
     
     def getComponentBit(self, comp_cls):
         return ComponentBitTracker.getBit(comp_cls)
     
     def init(self):
-        [ent.init() for ent in self.database.viewvalues()]
+        [ent.init() for ent in self.database.values()]

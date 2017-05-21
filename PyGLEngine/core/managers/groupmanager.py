@@ -27,7 +27,7 @@ class GroupManager(BaseManager):
         
     def getGroups(self, ent_id):
         found_groups = []
-        for group_name, entity_mask in self.database.viewitems() :
+        for group_name, entity_mask in self.database.items() :
             bit_index = ent_id.bit_length() - 1
             if (entity_mask & (1<<bit_index)):
                 found_groups.append(group_name)

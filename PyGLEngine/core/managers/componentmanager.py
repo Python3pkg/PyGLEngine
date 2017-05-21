@@ -53,7 +53,7 @@ class ComponentManager(BaseManager):
         self.deactivateQueue.add((ent_id, comp_id))
         
     def removeAllComponents(self, ent_id):
-        self.deactivateQueue.update(self.database.pop(ent_id).items())
+        self.deactivateQueue.update(list(self.database.pop(ent_id).items()))
         
     def getComponentBit(self, comp_cls):
         return ComponentBitTracker.getBit(comp_cls)

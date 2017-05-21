@@ -4,8 +4,8 @@ from operator import attrgetter, itemgetter
 
 #------------------------------------------------------------
 def getClassName(x):
-    if not isinstance(x, basestring):
-        if type(x) in [types.FunctionType, types.TypeType, types.ModuleType] :
+    if not isinstance(x, str):
+        if type(x) in [types.FunctionType, type, types.ModuleType] :
             return x.__name__
         else:
             return x.__class__.__name__
@@ -73,7 +73,7 @@ def synthesize(inst, name, value, readonly=False):
 
 #------------------------------------------------------------
 def Enum(*enumerated):
-    enums = dict(zip(enumerated, range(len(enumerated))))
+    enums = dict(list(zip(enumerated, list(range(len(enumerated))))))
     enums["names"] = enumerated
     return type('Enum', (), enums)
 

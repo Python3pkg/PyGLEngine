@@ -21,7 +21,7 @@ class World(BaseManager):
     def addManager(self, manager, priority=0):
         if not issubclass(manager, BaseManager): raise TypeError(manager)
         manager_name = getClassName(manager)
-        if manager_name not in self.database.viewkeys():
+        if manager_name not in self.database.keys():
             manager_cls = manager(priority=priority, world=self)
             self.database[manager_name] = manager_cls
     
@@ -33,7 +33,7 @@ class World(BaseManager):
     
     def init(self):
         #We setup the priority queue just on init
-        self.managerQueue = getSortedByAttr(self.database.viewvalues(), 'priority')
+        self.managerQueue = getSortedByAttr(self.database.values(), 'priority')
         [manager.init() for manager in self.managerQueue]
         #We want to make sure all the managers are init'd before we start them
         self.start()

@@ -14,6 +14,6 @@ class TagManager(BaseManager):
     
     def getTagsByValue(self, value):
         try:
-            return [k for k, v in self.database.viewitems() if v == value]
+            return [k for k, v in self.database.items() if v == value]
         except :
             return ''

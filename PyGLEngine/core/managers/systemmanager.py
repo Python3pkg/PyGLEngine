@@ -1,4 +1,4 @@
-from Queue import Queue
+from queue import Queue
 from threading import Thread, Event
 from multiprocessing import Process
 
@@ -27,7 +27,7 @@ class System(Base):
             pass
         
     def process(self, dt):
-        [self.processEntity(ent, dt) for ent in self.database.viewvalues()]
+        [self.processEntity(ent, dt) for ent in self.database.values()]
         
     def processEntity(self, ent, dt):
         raise NotImplementedError
@@ -43,7 +43,7 @@ class ThreadedSystem(Process, System):
         System.__init__(self, **kwds)
     
     def run(self):
-        print '{0} Started!'.format(self.getName())
+        print('{0} Started!'.format(self.getName()))
         while self.isAlive :
             ent, dt = self.queue.get()
             if self._stop.isSet() :
@@ -55,7 +55,7 @@ class ThreadedSystem(Process, System):
         self._stop.set()
     
     def process(self, dt):
-        [self.queue.put((ent, dt)) for ent in self.database.viewvalues()]
+        [self.queue.put((ent, dt)) for ent in self.database.values()]
         
 
 
@@ -86,7 +86,7 @@ class SystemManager(BaseManager):
         
     def init(self):
         self.EntityManager = self.world.EntityManager
-        self.systemQueue = getSortedByAttr(self.database.viewvalues(), 'priority')
+        self.systemQueue = getSortedByAttr(self.database.values(), 'priority')
         [system.init() for system in self.systemQueue]
             
     def start(self):
